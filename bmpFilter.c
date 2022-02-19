@@ -93,22 +93,18 @@ void applyFilterToPixelArray(unsigned char* pixelArray, int width, int height, i
 }
 
 void parseHeaderAndApplyFilter(unsigned char* bmpFileAsBytes, int isGrayscale) {
-  int offsetFirstBytePixelArray = 0;
-  int width = 0;
-  int height = 0;
-  unsigned char* pixelArray = NULL;
+  int offsetFirstBytePixelArray = *((int*) (bmpFileAsBytes+10));
 
-  printf("TODO: set offsetFirstBytePixelArray\n");
-  printf("TODO: set width\n");
-  printf("TODO: set height\n");
-  printf("TODO: set the pixelArray to the start of the pixel array\n");
+  // We are getting this information from BITMAPINFOHEADER 
+  int width = *((int*) (bmpFileAsBytes+18));
+  int height = *((int*) (bmpFileAsBytes+22));
 
-#ifdef DEBUG
+  unsigned char* pixelArray = (bmpFileAsBytes + 54);
+
   printf("offsetFirstBytePixelArray = %u\n", offsetFirstBytePixelArray);
   printf("width = %u\n", width);
   printf("height = %u\n", height);
   printf("pixelArray = %p\n", pixelArray);
-#endif
 
   applyFilterToPixelArray(pixelArray, width, height, isGrayscale);
 }
