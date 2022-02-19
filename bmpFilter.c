@@ -65,18 +65,22 @@ unsigned char getAverageIntensity(unsigned char blue, unsigned char green, unsig
 	return averageIntensity;
 }
 
+/** Each pixel in the image is converted to a gray pixel by setting all three color values equal to 
+ * the average of the three original values.  
+*/
 void applyGrayscaleToPixel(unsigned char* pixel) {
-
+	unsigned char averageIntesity = getAverageIntensity(pixel[2], pixel[1], pixel[0]);
+	
+	for (int i = 0; i < 3; i++) {
+		pixel[i] = averageIntesity;
+	}
 }
 
 /**  Pixels in the original image with an average intensity of 128 or more will become white while
 	those with average intensities below 128 will become black.
 */
 void applyThresholdToPixel(unsigned char* pixel) {
-	unsigned char red = pixel[0];
-	unsigned char green = pixel[1];
-	unsigned char blue = pixel[2];
-	unsigned char averageIntesity = getAverageIntensity(blue, green, red);
+	unsigned char averageIntesity = getAverageIntensity(pixel[2], pixel[1], pixel[0]);
 
 	if (averageIntesity >= 128) {
 		for (int i = 0; i < 3; i++) {
