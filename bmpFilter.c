@@ -61,24 +61,47 @@ void getBmpFileAsBytes(unsigned char* ptr, unsigned fileSizeInBytes, FILE* strea
 }
 
 unsigned char getAverageIntensity(unsigned char blue, unsigned char green, unsigned char red) {
-  printf("TODO: unsigned char getAverageIntensity(unsigned char blue, unsigned char green, unsigned char red)\n");
-  return 0;
+	unsigned char averageIntensity = (blue + green + red) / 3;
+	return averageIntensity;
 }
 
 void applyGrayscaleToPixel(unsigned char* pixel) {
-  printf("TODO: void applyGrayscaleToPixel(unsigned char* pixel)\n");
+
 }
 
+/**  Pixels in the original image with an average intensity of 128 or more will become white while
+	those with average intensities below 128 will become black.
+*/
 void applyThresholdToPixel(unsigned char* pixel) {
-  printf("TODO: void applyThresholdToPixel(unsigned char* pixel)\n");
+	unsigned char red = pixel[0];
+	unsigned char green = pixel[1];
+	unsigned char blue = pixel[2];
+	unsigned char averageIntesity = getAverageIntensity(blue, green, red);
+
+	if (averageIntesity >= 128) {
+		for (int i = 0; i < 3; i++) {
+			pixel[i] = 0xff;
+		}
+	} else {
+		for (int i = 0; i < 3; i++) {
+			pixel[i] = 0x00;
+		}
+	}
 }
 
 void applyFilterToPixel(unsigned char* pixel, int isGrayscale) {
-  printf("TODO: void applyFilterToPixel(unsigned char* pixel, int isGrayscale)\n");
+	if (isGrayscale == TRUE) {
+		applyGrayscaleToPixel(pixel);
+	} else {
+		applyThresholdToPixel(pixel);
+	}
 }
 
 void applyFilterToRow(unsigned char* row, int width, int isGrayscale) {
-//   printf("TODO: void applyFilterToRow(unsigned char* row, int width, int isGrayscale)\n");
+	// applyFilterToPixel to every pixel in width long row	
+	for (int i = 0; i < width; i++) {
+		applyFilterToPixel((row+i), isGrayscale);
+	}
 }
 
 void applyFilterToPixelArray(unsigned char* pixelArray, int width, int height, int isGrayscale) {
