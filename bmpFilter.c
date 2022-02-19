@@ -78,64 +78,71 @@ void applyFilterToPixel(unsigned char* pixel, int isGrayscale) {
 }
 
 void applyFilterToRow(unsigned char* row, int width, int isGrayscale) {
-  printf("TODO: void applyFilterToRow(unsigned char* row, int width, int isGrayscale)\n");
+//   printf("TODO: void applyFilterToRow(unsigned char* row, int width, int isGrayscale)\n");
 }
 
 void applyFilterToPixelArray(unsigned char* pixelArray, int width, int height, int isGrayscale) {
-  int padding = 0;
-  printf("TODO: compute the required amount of padding from the image width");
+	// 3 bytes per pixel
+	int widthInBytes = width * 3; 
+	// Each row will occupy a multiple of 4 bytes - You can change this to whatever though
+	int paddingMultiple = 4;
+	// Padding between each row
+	int padding = paddingMultiple - (widthInBytes % paddingMultiple);
 
-#ifdef DEBUG
-  printf("padding = %d\n", padding);
-#endif  
-  
-  printf("TODO: void applyFilterToPixelArray(unsigned char* pixelArray, int width, int height, int isGrayscale)\n");
+	// Loop through the entire file and call applyFilterToRow on every row
+	for (int i = 0; i < height; i++) {
+		// Row begins at pizelArray and is width + padding big. 
+		unsigned char* row = pixelArray + widthInBytes;
+		applyFilterToRow(row, width, isGrayscale);	
+		// Padding only after the first row.
+		row += padding;
+	}
 }
 
 void parseHeaderAndApplyFilter(unsigned char* bmpFileAsBytes, int isGrayscale) {
-  int offsetFirstBytePixelArray = *((int*) (bmpFileAsBytes+10));
+	int offsetFirstBytePixelArray = *((int*) (bmpFileAsBytes+10));
 
-  // We are getting this information from BITMAPINFOHEADER 
-  int width = *((int*) (bmpFileAsBytes+18));
-  int height = *((int*) (bmpFileAsBytes+22));
+	// We are getting this information from BITMAPINFOHEADER 
+	int width = *((int*) (bmpFileAsBytes+18));
+	int height = *((int*) (bmpFileAsBytes+22));
 
-  unsigned char* pixelArray = (bmpFileAsBytes + 54);
+	unsigned char* pixelArray = (bmpFileAsBytes + 54);
 
-  printf("offsetFirstBytePixelArray = %u\n", offsetFirstBytePixelArray);
-  printf("width = %u\n", width);
-  printf("height = %u\n", height);
-  printf("pixelArray = %p\n", pixelArray);
+	printf("offsetFirstBytePixelArray = %u\n", offsetFirstBytePixelArray);
+	printf("width = %u\n", width);
+	printf("height = %u\n", height);
+	printf("pixelArray = %p\n", pixelArray);
 
-  applyFilterToPixelArray(pixelArray, width, height, isGrayscale);
+	applyFilterToPixelArray(pixelArray, width, height, isGrayscale);
 }
 
 int main(int argc, char **argv) {
-  int grayscale = FALSE;
-  unsigned fileSizeInBytes = 0;
-  unsigned char* bmpFileAsBytes = NULL;
-  FILE *stream = NULL;
-  
-  stream = parseCommandLine(argc, argv, &grayscale);
-  fileSizeInBytes = getFileSizeInBytes(stream);
+	int grayscale = FALSE;
+	unsigned fileSizeInBytes = 0;
+	unsigned char* bmpFileAsBytes = NULL;
+	FILE *stream = NULL;
+	
+	stream = parseCommandLine(argc, argv, &grayscale);
+	fileSizeInBytes = getFileSizeInBytes(stream);
 
 #ifdef DEBUG
-  printf("fileSizeInBytes = %u\n", fileSizeInBytes);
+  	printf("fileSizeInBytes = %u\n", fileSizeInBytes);
 #endif
 
-  bmpFileAsBytes = (unsigned char *)malloc(fileSizeInBytes);
-  if (bmpFileAsBytes == NULL) {
-    exit(MALLOC_ERROR);
-  }
-  getBmpFileAsBytes(bmpFileAsBytes, fileSizeInBytes, stream);
+	bmpFileAsBytes = (unsigned char *)malloc(fileSizeInBytes);
+	if (bmpFileAsBytes == NULL) {
+		exit(MALLOC_ERROR);
+	}
+	getBmpFileAsBytes(bmpFileAsBytes, fileSizeInBytes, stream);
 
-  parseHeaderAndApplyFilter(bmpFileAsBytes, grayscale);
+	parseHeaderAndApplyFilter(bmpFileAsBytes, grayscale);
 
 #ifndef DEBUG
-  if (fwrite(bmpFileAsBytes, fileSizeInBytes, 1, stdout) != 1) {
-    exit(FWRITE_ERROR);
-  }
+	if (fwrite(bmpFileAsBytes, fileSizeInBytes, 1, stdout) != 1) {
+		exit(FWRITE_ERROR);
+	}
 #endif
 
-  free(bmpFileAsBytes);
-  return 0;
+	free(bmpFileAsBytes);
+	return 0;
 }
