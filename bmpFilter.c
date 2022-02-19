@@ -104,11 +104,13 @@ void applyFilterToPixel(unsigned char* pixel, int isGrayscale) {
 void applyFilterToRow(unsigned char* row, int width, int isGrayscale) {
 	// applyFilterToPixel to every pixel in width long row	
 	for (int i = 0; i < width; i++) {
-		applyFilterToPixel((row+i), isGrayscale);
+		applyFilterToPixel(row, isGrayscale);
+		row += 3;
 	}
 }
 
 void applyFilterToPixelArray(unsigned char* pixelArray, int width, int height, int isGrayscale) {
+	unsigned char* rowNum = pixelArray;
 	// 3 bytes per pixel
 	int widthInBytes = width * 3; 
 	// Each row will occupy a multiple of 4 bytes - You can change this to whatever though
@@ -116,11 +118,18 @@ void applyFilterToPixelArray(unsigned char* pixelArray, int width, int height, i
 	// Padding between each row
 	int padding = paddingMultiple - (widthInBytes % paddingMultiple);
 
+	// Padding can't be equal to paddingMultiple
+	if (padding == paddingMultiple) {
+		padding = 0;
+	}
+
 	// Loop through the entire file and call applyFilterToRow on every row
 	for (int i = 0; i < height; i++) {
 		// Row begins at pizelArray and is width + padding big. 
-		unsigned char* row = pixelArray + widthInBytes;
+		unsigned char* row = rowNum;
 		applyFilterToRow(row, width, isGrayscale);	
+		rowNum += widthInBytes;
+
 		// Padding only after the first row.
 		row += padding;
 	}
@@ -135,11 +144,6 @@ void parseHeaderAndApplyFilter(unsigned char* bmpFileAsBytes, int isGrayscale) {
 
 	unsigned char* pixelArray = (bmpFileAsBytes + 54);
 
-	printf("offsetFirstBytePixelArray = %u\n", offsetFirstBytePixelArray);
-	printf("width = %u\n", width);
-	printf("height = %u\n", height);
-	printf("pixelArray = %p\n", pixelArray);
-
 	applyFilterToPixelArray(pixelArray, width, height, isGrayscale);
 }
 
@@ -151,10 +155,6 @@ int main(int argc, char **argv) {
 	
 	stream = parseCommandLine(argc, argv, &grayscale);
 	fileSizeInBytes = getFileSizeInBytes(stream);
-
-#ifdef DEBUG
-  	printf("fileSizeInBytes = %u\n", fileSizeInBytes);
-#endif
 
 	bmpFileAsBytes = (unsigned char *)malloc(fileSizeInBytes);
 	if (bmpFileAsBytes == NULL) {
